@@ -7,6 +7,8 @@ token_specification = [
     ('SUB',      r'-'),            # Subtraction
     ('MUL',      r'\*'),           # Multiplication
     ('DIV',      r'/'),            # Division
+    ('LPAREN',   r'\('),           # Left Parenthesis
+    ('RPAREN',   r'\)'),           # Right Parenthesis
     ('SKIP',     r'[ \t]+'),       # Skip spaces and tabs
     ('MISMATCH', r'.'),            # Any other character
 ]
@@ -23,7 +25,6 @@ def tokenize(code):
             continue
         yield (kind, value)
 
-# Modified SimpleInterpreter with changed precedence
 class SimpleInterpreter:
     def __init__(self, tokens):
         self.tokens = list(tokens)
@@ -41,13 +42,21 @@ class SimpleInterpreter:
             raise SyntaxError(f"Expected {token_type}, got {self.current_token[0]}")
 
     def factor(self):
-        """Parse a number."""
+        """Parse a number or a parenthesized expression."""
         token = self.current_token
         if token[0] == 'NUMBER':
             self.eat('NUMBER')
             return token[1]
+        elif token[0] == 'LPAREN':
+            self.eat('LPAREN')
+            result = self.expr()
+            if self.current_token[0] == 'RPAREN':
+                self.eat('RPAREN')
+                return result
+            else:
+                raise SyntaxError("Expected ')'")
         else:
-            raise SyntaxError("Expected a number")
+            raise SyntaxError("Expected a number or '('")
 
     def expr(self):
         """Handle addition and subtraction with higher precedence than multiplication/division."""
@@ -76,7 +85,7 @@ class SimpleInterpreter:
         return result
 
 # Example usage
-code = "5 * 2 + 5 - 2"  # Now, addition will have higher precedence
+code = "(3 + 4) * 2"  # Parentheses override precedence
 tokens = tokenize(code)
 interpreter = SimpleInterpreter(tokens)
 result = interpreter.expr()
