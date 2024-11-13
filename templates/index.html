@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expression Evaluator</title>
+</head>
+
+<body>
+    <!-- Main heading of the page -->
+    <h1>Expression Evaluator</h1>
+
+    <!-- Form for entering the expression to be evaluated -->
+    <form id="expression-form">
+        <label for="expression">Enter an expression:</label>
+        <input type="text" id="expression" name="expression" required>
+        <button type="submit">Evaluate</button>
+    </form>
+
+    <!-- Div to display the result of the evaluation -->
+    <div id="result"></div>
+
+    <script>
+        // Add an event listener to the form to handle submission
+        document.getElementById('expression-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Get the expression entered by the user
+            const expression = document.getElementById('expression').value;
+
+            // Send the expression to the server for evaluation
+            fetch('/evaluate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ expression })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Display the result or error message
+                    if (data.result !== undefined) {
+                        document.getElementById('result').innerText = 'Result: ' + data.result;
+                    } else {
+                        document.getElementById('result').innerText = 'Error: ' + data.error;
+                    }
+                });
+        });
+    </script>
+</body>
+
+</html>
